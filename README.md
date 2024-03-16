@@ -20,7 +20,7 @@ This project serves an educational purpose, functioning as a backend system desi
 
 
 
-## endpoint specification
+## Endpoint specification
 ```sh
 /api/login
 ```
