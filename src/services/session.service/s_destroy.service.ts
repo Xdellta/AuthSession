@@ -6,13 +6,13 @@ const destroy = async (sessionId: string, res: Response) => {
     res.clearCookie('sessionId');
 
     if (!sessionId) {
-      throw { status: 400, message: 'Session unavailable or does not exist' };
+      throw { status: 400, message: 'The session ID is unavailable or does not exist' };
     }
     
     const resultDestroy = await prisma.session.delete({ where: { session_id: sessionId } });
 
     if (!resultDestroy) {
-      throw { status: 404, message: 'Session not found or already deleted' };
+      throw { status: 404, message: 'Session unavailable or does not exist' };
     }
 
     res.clearCookie('sessionId');

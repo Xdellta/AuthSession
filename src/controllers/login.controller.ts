@@ -8,35 +8,33 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
 
-    // Validation of the email formula by a function
+    // Validation of input data
     const emailValid = validator.email(email);
 
     if (!emailValid.success) {
       throw { status: emailValid.status };
     }
 
-    // Validation of the password formula by a function
     const passwordValid = validator.password(password);
     
     if (!passwordValid.success) {
       throw { status: passwordValid.status };
     }
 
-    // Check if the user with the provided email address exists
+    // User search and password verification
     const user = await prisma.user.findFirst({ where: { email: { equals: email } } });
 
     if (!user) {
       throw { status: 401 };
     }
 
-    // Check the correctness of the password
     const isValidPassword = await bcrypt.compare(password, user.password);
 
     if (!isValidPassword) {
       throw { status: 401 };
     }
 
-    // Creating a session by a function and checking the result
+    // Create a session
     const resultCreate = await sessionSvc.create(user.user_id, res);
 
     if (!resultCreate) {

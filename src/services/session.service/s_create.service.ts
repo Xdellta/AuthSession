@@ -5,7 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 const create = async (userId: number, res: Response) => {
   try {
-    if (!userId) throw { status: 400, message: 'Session unavailable or does not exist' };
+    if (!userId) {
+      throw { status: 400, message: 'The session ID is unavailable or does not exist' };
+    }
 
     let sessionId;
 
@@ -15,15 +17,17 @@ const create = async (userId: number, res: Response) => {
 
     const expires = new Date(Date.now() + appCfg.session.duration);
 
-    const createResult = await prisma.session.create({
+    const resultCreate = await prisma.session.create({
       data: {
         session_id: sessionId,
         user_id: userId,
-        expires: expires
+        expires
       }
     });
 
-    if (!createResult) throw { status: 500 };
+    if (!resultCreate) {
+      throw { status: 500, message: 'Failed to create session' };
+    }
 
     res.cookie('sessionId', sessionId, {
       expires,

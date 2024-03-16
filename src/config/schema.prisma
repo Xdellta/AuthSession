@@ -11,7 +11,6 @@ model User {
   user_id  Int      @id @default(autoincrement())
   email    String
   password String
-  role     String
   Session  Session[]
 
   @@map("users")
