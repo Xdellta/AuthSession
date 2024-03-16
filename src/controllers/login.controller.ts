@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import prisma from '../config/prisma.config';
 import bcrypt from 'bcrypt';
-import User from '../models/user.model';
-import sessionSvc from '../services/session.service';
 import validator from '../utils/validator.util';
+import sessionSvc from '../services/session.service';
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -23,7 +23,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Check if the user with the provided email address exists
-    const user = await User.findOne({ where: { email: email } });
+    const user = await prisma.user.findFirst({ where: { email: { equals: email } } });
 
     if (!user) {
       throw { status: 401 };
@@ -37,13 +37,13 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Creating a session by a function and checking the result
-    const createResult = await sessionSvc.create(user.user_id, res);
+    const resultCreate = await sessionSvc.create(user.user_id, res);
 
-    if (!createResult.success) {
-      throw { status: createResult.status };
+    if (!resultCreate) {
+      throw { status: 404, message: '' };
     }
 
-    return res.sendStatus(200).send('Login successful');;
+    res.status(200).send('Login successful');
 
   } catch(error) {
     next(error);

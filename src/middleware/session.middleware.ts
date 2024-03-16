@@ -1,32 +1,32 @@
 import { Request, Response, NextFunction } from 'express';
-import Session, { SessionModel } from '../models/session.model';
+import prisma from '../config/prisma.config';
+import appCfg from '../config/app.config';
 
-declare global {
-  namespace Express {
-    interface Request {
-      session?: SessionModel | null;
-    }
-  }
-}
-
-// pobieranie sid z ciastka >> wyszukiwanie sesji w bazie >> przypisywanie sesji do req
-const session = async (req: Request, res: Response, next: NextFunction) => {
+const sessionMdw = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const sessionId = req.cookies.sessionId;
+    const sessionId = req.cookies['sessionId'];
 
-    if (!sessionId) {
-      next();
+    if (!req.cookies.sessionId) {
+      throw { status: 400, message: 'Session unavailable or invalid' }
     }
 
-    req.session = await Session.findOne('session_id', sessionId);
+    // Wysuzkiwanie sesji na podstawie sid
+    const session = await prisma.session.findUnique({ where: { session_id: sessionId } });
+
+    if (!session) throw { status: 404, message: 'Session not found' };
+
+    // Sprawdzanie zgodności czasu i odświeżanie
+    if (session.expires < new Date()) throw { status: 401, message: 'Session has expired' };
+
+    // zaimplementować refresh sesji jeżeli czas wygaśnięcia jest bliski
+
+    res.locals.session = session;
+
     next();
 
-  } catch(error) {
-    next(error);
+  } catch(err) {
+    next(err);
   }
 }
 
-export default session;
-
-// 1. Dorobić create po przez dołączenie req.session.userId
-// 2. wykonać .destroy(), .refresh(), .roleAuth()
+export default sessionMdw;

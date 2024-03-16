@@ -1,35 +1,30 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response } from 'express';
+import prisma from '../../config/prisma.config';
 import appCfg from '../../config/app.config';
-import Session from '../../models/session.model';
 import { v4 as uuidv4 } from 'uuid';
 
 const create = async (userId: number, res: Response) => {
   try {
-    // Checking if the user id exists
-    if (!userId) {
-      throw { status: 400 };
-    }
+    if (!userId) throw { status: 400, message: 'Session unavailable or does not exist' };
 
-    // Generating a unique session id
     let sessionId;
 
     do {
       sessionId = uuidv4();
-    } while (await Session.findOne({ where: { session_id: sessionId }, raw: true }));
+    } while (await prisma.session.findUnique({ where: { session_id: sessionId } }));
 
-    // Set a session expiration time
-    const sessionDuration = appCfg.session?.duration || 0;
-    const expires = new Date(Date.now() + sessionDuration);
+    const expires = new Date(Date.now() + appCfg.session.duration);
 
-    // Saving a new session to the database
-    await Session.create({
-      session_id: sessionId,
-      user_id: userId,
-      data: null,
-      expires,
+    const createResult = await prisma.session.create({
+      data: {
+        session_id: sessionId,
+        user_id: userId,
+        expires: expires
+      }
     });
 
-    // Saving the session id to the user's cookie
+    if (!createResult) throw { status: 500 };
+
     res.cookie('sessionId', sessionId, {
       expires,
       httpOnly: true,
@@ -38,8 +33,8 @@ const create = async (userId: number, res: Response) => {
 
     return { success: true };
 
-  } catch (error: any) {
-    return { success: false, status: error.status || 500 };
+  } catch (err: any) {
+    return { success: false, status: err.status, message: err.message };
   }
 }
 

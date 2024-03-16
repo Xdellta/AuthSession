@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id  Int      @id @default(autoincrement())
+  email    String
+  password String
+  role     String
+  Session  Session[]
+
+  @@map("users")
+}
+
+model Session {
+  session_id String @id
+  user_id    Int
+  data       String?
+  expires    DateTime @default(now()) @updatedAt
+  User       User    @relation(fields: [user_id], references: [user_id])
+
+  @@map("sessions")
+}

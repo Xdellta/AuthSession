@@ -1,27 +1,26 @@
-import { Request, Response, NextFunction } from 'express';
-import Session from '../../models/session.model';
+import { Response } from 'express';
+import prisma from '../../config/prisma.config';
 
-const destroy = async (sessionId: number, res: Response) => {
+const destroy = async (sessionId: string, res: Response) => {
   try {
-    // Removing the session id from the user's cookie
     res.clearCookie('sessionId');
 
-    // Checking if the session id exists
     if (!sessionId) {
-      throw { status: 400 };
+      throw { status: 400, message: 'Session unavailable or does not exist' };
     }
     
-    // Destroying sessions in the database based on session ID
-    const destroyedSession = await Session.destroy({ where: { session_id: sessionId } });
+    const resultDestroy = await prisma.session.delete({ where: { session_id: sessionId } });
 
-    if (!destroyedSession) {
-      throw { status: 404 };
+    if (!resultDestroy) {
+      throw { status: 404, message: 'Session not found or already deleted' };
     }
+
+    res.clearCookie('sessionId');
 
     return { success: true };
 
-  } catch (error: any) {
-    return { success: false, status: error.status || 500 };
+  } catch (err: any) {
+    return { success: false, status: err.status, message: err.message };
   }
 }
 

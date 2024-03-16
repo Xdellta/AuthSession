@@ -1,27 +1,25 @@
 import { Request, Response, NextFunction } from 'express';
-import sessionSvc from '../services/session.service';
+import prisma from '../config/prisma.config';
 
 // Logout controller for sessions
 const logout = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Extracting session id from the request
-    const sessionId = res.locals.session.session_id;
+    const session = res.locals.session;
 
-    if (!sessionId) {
-      throw { status: 400 };
+    if (!session) {
+      throw { status: 400, message: 'Session unavailable or does not exist' };
     }
 
-    // Destroying the session by the function and checking the result
-    const destroyResult = await sessionSvc.destroy(sessionId, res);
+    const resultDestroy = await prisma.session.delete({ where: { session_id: session.session_id } });
 
-    if (!destroyResult.success) {
-      throw { status: destroyResult.status };
+    if (!resultDestroy) {
+      throw { status: 404, message: 'Session unavailable or does not exist' };
     }
 
-    return res.sendStatus(200).send('Logout successful');;
+    res.status(200).send('Logout successful');
 
-  } catch(error) {
-    next(error);
+  } catch(err) {
+    next(err);
   }
 }
 

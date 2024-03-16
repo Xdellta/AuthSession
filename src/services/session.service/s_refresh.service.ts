@@ -1,23 +1,31 @@
+import prisma from '../../config/prisma.config';
 import appCfg from '../../config/app.config';
+
+import { v4 as uuidv4 } from 'uuid';
 
 const refresh = async (session: any) => {
   try {
-    // Checking if the session exists
     if (!session) {
-      throw { status: 400 };
+      throw { status: 400, message: 'Session unavailable or does not exist' };
     }
 
-    // Set a new session expiration time
-    const sessionDuration = appCfg.session?.duration || 0;
-    const newExpires = new Date(Date.now() + sessionDuration);
+    const newSessionId = uuidv4();
+    const newExpires = new Date(Date.now() + appCfg.session.duration);
 
-    // Update the "expires" record in the database
-    await session.update({ expires: newExpires });
+    const resultRefresh = await prisma.session.update({
+      where: { session_id: session.session_id },
+      data: {
+        session_id: newSessionId,
+        expires: newExpires
+      }
+    });
+
+    if (!resultRefresh) throw { status: 500, message: 'Failed to refresh session' };
 
     return { success: true };
 
-  } catch(error: any) {
-    return { success: false, status: error.status || 500 };
+  } catch(err: any) {
+    return { success: false, status: err.status, message: err.message };
   }
 }
 
