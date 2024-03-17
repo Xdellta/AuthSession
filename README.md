@@ -24,17 +24,20 @@ This project serves an educational purpose, functioning as a backend system desi
 ```sh
 /api/auth/login
 ```
+* POST
 * Request: `email: string`, `password: string`
 * Response (200): set cookie `sessionId`
 
 ```sh
 /api/auth/register
 ```
+* POST
 * Request: `email: string`, `password: string`, `repeatPassword: string`,
 * Response (200): set cookie `sessionId`
 
 ```sh
 /api/auth/logout
 ```
+* POST
 * Request: get cookie `sessionId`
 * Response (200): clear cookie `sessionId`
