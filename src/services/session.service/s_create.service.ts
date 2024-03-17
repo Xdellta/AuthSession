@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 const create = async (userId: number, res: Response) => {
   try {
     if (!userId) {
-      throw { status: 400, message: 'The session ID is unavailable or does not exist' };
+      throw new Error('The session ID is unavailable or does not exist');
     }
 
     let sessionId;
@@ -15,22 +15,24 @@ const create = async (userId: number, res: Response) => {
       sessionId = uuidv4();
     } while (await prisma.session.findUnique({ where: { session_id: sessionId } }));
 
-    const expires = new Date(Date.now() + appCfg.session.duration);
+    const createdAt = new Date;
+    const expiredAt = new Date(Date.now() + appCfg.session.duration);
 
-    const resultCreate = await prisma.session.create({
+    const createResult = await prisma.session.create({
       data: {
         session_id: sessionId,
         user_id: userId,
-        expires
+        created_at: createdAt,
+        expired_at: expiredAt
       }
     });
 
-    if (!resultCreate) {
-      throw { status: 500, message: 'Failed to create session' };
+    if (!createResult) {
+      throw new Error('Failed to create session');
     }
 
     res.cookie('sessionId', sessionId, {
-      expires,
+      expires: expiredAt,
       httpOnly: true,
       secure: appCfg.protocol === 'https',
     });
@@ -38,7 +40,7 @@ const create = async (userId: number, res: Response) => {
     return { success: true };
 
   } catch (err: any) {
-    return { success: false, status: err.status, message: err.message };
+    return { success: false, message: err.message };
   }
 }
 

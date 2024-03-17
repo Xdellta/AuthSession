@@ -6,40 +6,41 @@ import { v4 as uuidv4 } from 'uuid';
 const refresh = async (sessionId: string, res: Response) => {
   try {
     if (!sessionId) {
-      throw { status: 400, message: 'The session ID is unavailable or does not exist' };
+      throw new Error('The session ID is unavailable or does not exist');
     }
 
     const newSessionId = uuidv4();
-    const newExpires = new Date(Date.now() + appCfg.session.duration);
+    const newExpiredAt = new Date(Date.now() + appCfg.session.duration);
 
-    const resultUpdate = await prisma.session.update({
+    const updateResult = await prisma.session.update({
       where: { session_id: sessionId },
       data: {
         session_id: newSessionId,
-        expires: newExpires
+        expired_at: newExpiredAt
       },
       select: {
         session_id: true,
         user_id: true,
         data: true,
-        expires: true
+        created_at: true,
+        expired_at: true
       }
     });
 
-    if (!resultUpdate) {
-      throw { status: 500, message: 'Failed to refresh session' };
+    if (!updateResult) {
+      throw new Error('Failed to refresh session');
     }
 
     res.cookie('sessionId', sessionId, {
-      expires: resultUpdate.expires,
+      expires: updateResult.expired_at,
       httpOnly: true,
       secure: appCfg.protocol === 'https',
     });
 
-    return { success: true, session: resultUpdate };
+    return { success: true, session: updateResult };
 
   } catch(err: any) {
-    return { success: false, status: err.status, message: err.message };
+    return { success: false, message: err.message };
   }
 }
 

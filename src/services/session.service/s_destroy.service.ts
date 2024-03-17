@@ -6,13 +6,13 @@ const destroy = async (sessionId: string, res: Response) => {
     res.clearCookie('sessionId');
 
     if (!sessionId) {
-      throw { status: 400, message: 'The session ID is unavailable or does not exist' };
+      throw new Error('The session ID is unavailable or does not exist');
     }
     
-    const resultDestroy = await prisma.session.delete({ where: { session_id: sessionId } });
+    const destroyResult = await prisma.session.delete({ where: { session_id: sessionId } });
 
-    if (!resultDestroy) {
-      throw { status: 404, message: 'Session unavailable or does not exist' };
+    if (!destroyResult) {
+      throw new Error('Session unavailable or does not exist');
     }
 
     res.clearCookie('sessionId');
@@ -20,7 +20,7 @@ const destroy = async (sessionId: string, res: Response) => {
     return { success: true };
 
   } catch (err: any) {
-    return { success: false, status: err.status, message: err.message };
+    return { success: false, message: err.message };
   }
 }
 

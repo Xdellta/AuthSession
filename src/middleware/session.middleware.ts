@@ -14,23 +14,23 @@ const sessionMdw = async (req: Request, res: Response, next: NextFunction) => {
     let session = await prisma.session.findUnique({ where: { session_id: sessionId } });
 
     if (!session) {
-      throw { status: 404, message: 'Session unavailable or does not exist' };
+      throw { status: 401, message: 'Session unavailable or does not exist' };
     }
 
-    // Verifying session activity
-    if (new Date(session.expires) < new Date()) {
+    // If the session has expired
+    if (new Date(session.expired_at) < new Date()) {
       throw { status: 401, message: 'Session has expired' };
     }
 
     // Refreshing session if 1 hour left
-    if (new Date(session.expires).getTime() - Date.now() <= 3600000) {
-      const resultRefresh = await sessionSvc.refresh(session.session_id, res);
+    if (new Date(session.expired_at).getTime() - Date.now() <= 3600000) {
+      const refreshResult = await sessionSvc.refresh(sessionId, res);
 
-      if (!resultRefresh.success) {
-        throw { status: resultRefresh.status, message: resultRefresh.message };
+      if (!refreshResult.success) {
+        throw { message: refreshResult.message };
       }
 
-      session = resultRefresh.session || null;
+      session = refreshResult.session || null;
     }
 
     res.locals.session = session;

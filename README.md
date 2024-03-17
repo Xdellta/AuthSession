@@ -22,13 +22,19 @@ This project serves an educational purpose, functioning as a backend system desi
 
 ## Endpoint specification
 ```sh
-/api/login
+/api/auth/login
 ```
 * Request: `email: string`, `password: string`
-* Response: set cookie `sessionId`
+* Response (200): set cookie `sessionId`
 
 ```sh
-/api/logout
+/api/auth/register
+```
+* Request: `email: string`, `password: string`, `repeatPassword: string`,
+* Response (200): set cookie `sessionId`
+
+```sh
+/api/auth/logout
 ```
 * Request: get cookie `sessionId`
-* Response: clear cookie `sessionId`
+* Response (200): clear cookie `sessionId`

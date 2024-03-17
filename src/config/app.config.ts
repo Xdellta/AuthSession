@@ -2,6 +2,7 @@ interface AppOptions {
   protocol: string;
   domain: string;
   port: number;
+  
   session: {
     duration: number;
   };

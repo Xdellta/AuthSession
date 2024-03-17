@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import prisma from '../config/prisma.config';
+import prisma from '../../config/prisma.config';
 import bcrypt from 'bcrypt';
-import validator from '../utils/validator.util';
-import sessionSvc from '../services/session.service';
+import validator from '../../utils/validator.util';
+import sessionSvc from '../../services/session.service';
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -10,35 +10,30 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     // Validation of input data
     const emailValid = validator.email(email);
-
-    if (!emailValid.success) {
-      throw { status: emailValid.status };
-    }
-
     const passwordValid = validator.password(password);
-    
-    if (!passwordValid.success) {
-      throw { status: passwordValid.status };
+
+    if (!emailValid || !passwordValid) {
+      throw { status: 400, message: 'Incorrect email or password' };
     }
 
     // User search and password verification
     const user = await prisma.user.findFirst({ where: { email: { equals: email } } });
 
     if (!user) {
-      throw { status: 401 };
+      throw { status: 401, message: 'Incorrect email' };
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
-    if (!isValidPassword) {
-      throw { status: 401 };
+    if (!passwordMatch) {
+      throw { status: 401, message: 'Incorrect password' };
     }
 
     // Create a session
-    const resultCreate = await sessionSvc.create(user.user_id, res);
+    const sessionResult = await sessionSvc.create(user.user_id, res);
 
-    if (!resultCreate) {
-      throw { status: 404, message: '' };
+    if (!sessionResult.success) {
+      throw { message: sessionResult.message };
     }
 
     res.status(200).send('Login successful');
