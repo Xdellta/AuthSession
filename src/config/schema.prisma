@@ -32,6 +32,7 @@ model User {
   user_id    Int      @id @default(autoincrement())
   email      String
   password   String
+  activated  Boolean  @default(false)
   created_at DateTime @default(now())
   sessions   Session[]
   tokens     Token[]

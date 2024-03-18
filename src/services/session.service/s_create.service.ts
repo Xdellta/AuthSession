@@ -13,7 +13,7 @@ const create = async (userId: number, res: Response) => {
     const createdAt = new Date;
     const expiredAt = new Date(Date.now() + appCfg.session.duration);
 
-    const createResult = await prisma.session.create({
+    const createdSession = await prisma.session.create({
       data: {
         session_id: sessionId,
         user_id: userId,
@@ -22,7 +22,7 @@ const create = async (userId: number, res: Response) => {
       }
     });
 
-    if (!createResult) {
+    if (!createdSession) {
       throw new Error('Error writing session to database');
     }
 

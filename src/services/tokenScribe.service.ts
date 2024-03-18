@@ -7,7 +7,7 @@ const tokenScribe = async (userId: number, duration: number) => {
     const createdAt = new Date;
     const expiredAt = new Date(Date.now() + duration);
 
-    const createResult = await prisma.token.create({
+    const createdToken = await prisma.token.create({
       data: {
         token: token,
         user_id: userId,
@@ -16,7 +16,7 @@ const tokenScribe = async (userId: number, duration: number) => {
       }
     });
 
-    if (!createResult) {
+    if (!createdToken) {
       throw new Error('Error writing verification token to database');
     }
 

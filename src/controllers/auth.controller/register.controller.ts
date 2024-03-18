@@ -3,6 +3,7 @@ import prisma from '../../config/prisma.config';
 import bcrypt from 'bcrypt';
 import validator from '../../utils/validator.util';
 import tokenScribe from '../../services/tokenScribe.service';
+import appCfg from '../../config/app.config';
 import mailer from '../../services/mailer.services';
 import sessionSvc from '../../services/session.service';
 
@@ -26,6 +27,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       data: {
         email: email,
         password: hashedPassword,
+        activated: false,
         created_at: createdAt
       }
     });
@@ -35,14 +37,15 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Sending a verification email
-    const tokenResult = await tokenScribe(user.user_id, 172800000);
+    const createdToken = await tokenScribe(user.user_id, 172800000);
 
-    if (!tokenResult.success) {
-      throw { message: tokenResult.message };
+    if (!createdToken.success) {
+      throw { message: createdToken.message };
     }
 
+    const activationLink = `${appCfg.protocol}://${appCfg.domain}:${appCfg.port}/api/auth/activate?token=${createdToken.token}`;
     const mailSubject = 'Weryfikacja konta';
-    const mailText = `Link do aktywacji konta: ${tokenResult.token}`;
+    const mailText = `Link do aktywacji konta: ${activationLink}`;
     const mailResult = await mailer(email, mailSubject, mailText);
 
     if (!mailResult.success) {
@@ -50,10 +53,10 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Creating session
-    const sessionResult = await sessionSvc.create(user.user_id, res);
+    const createdSession = await sessionSvc.create(user.user_id, res);
 
-    if (!sessionResult.success) {
-      throw { message: sessionResult.message };
+    if (!createdSession.success) {
+      throw { message: createdSession.message };
     }
     
     res.status(200).send('Register successful');

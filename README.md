@@ -41,3 +41,9 @@ This project serves an educational purpose, functioning as a backend system desi
 * POST
 * Request: get cookie `sessionId`
 * Response (200): clear cookie `sessionId`
+
+/api/auth/activate
+```
+* GET
+* Request: `query.token as string`
+* Response (200)

@@ -17,7 +17,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // User search and password verification
-    const user = await prisma.user.findFirst({ where: { email: { equals: email } } });
+    const user = await prisma.user.findFirst({ where: { email: email } });
 
     if (!user) {
       throw { status: 401, message: 'Incorrect email' };
@@ -30,10 +30,10 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Create a session
-    const sessionResult = await sessionSvc.create(user.user_id, res);
+    const createdSession = await sessionSvc.create(user.user_id, res);
 
-    if (!sessionResult.success) {
-      throw { message: sessionResult.message };
+    if (!createdSession.success) {
+      throw { message: createdSession.message };
     }
 
     res.status(200).send('Login successful');

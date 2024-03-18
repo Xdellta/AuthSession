@@ -12,7 +12,7 @@ const refresh = async (sessionId: string, res: Response) => {
     const newSessionId = uuidv4();
     const newExpiredAt = new Date(Date.now() + appCfg.session.duration);
 
-    const updateResult = await prisma.session.update({
+    const updatedSession = await prisma.session.update({
       where: { session_id: sessionId },
       data: {
         session_id: newSessionId,
@@ -27,17 +27,17 @@ const refresh = async (sessionId: string, res: Response) => {
       }
     });
 
-    if (!updateResult) {
+    if (!updatedSession) {
       throw new Error('Error updating session in database');
     }
 
     res.cookie('sessionId', sessionId, {
-      expires: updateResult.expired_at,
+      expires: updatedSession.expired_at,
       httpOnly: true,
       secure: appCfg.protocol === 'https',
     });
 
-    return { success: true, session: updateResult };
+    return { success: true, session: updatedSession };
 
   } catch(err: any) {
     return { success: false, message: err.message };

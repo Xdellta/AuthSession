@@ -9,9 +9,9 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
       throw { status: 400, message: 'Session unavailable or does not exist' };
     }
 
-    const destroyResult = await prisma.session.delete({ where: { session_id: session.session_id } });
+    const deletedSession = await prisma.session.delete({ where: { session_id: session.session_id } });
 
-    if (!destroyResult) {
+    if (!deletedSession) {
       throw { status: 500, message: 'Internal error while deleting sessions' };
     }
 
