@@ -42,6 +42,7 @@ This project serves an educational purpose, functioning as a backend system desi
 * Request: get cookie `sessionId`
 * Response (200): clear cookie `sessionId`
 
+```sh
 /api/auth/activate
 ```
 * GET
