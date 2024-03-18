@@ -37,14 +37,14 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Sending a verification email
-    const createdToken = await tokenScribe(user.user_id, 172800000);
+    const createdToken = await tokenScribe(user.user_id, 'accountActivation', 172800000);
 
     if (!createdToken.success) {
       throw { message: createdToken.message };
     }
 
     const activationLink = `${appCfg.protocol}://${appCfg.domain}:${appCfg.port}/api/auth/activate?token=${createdToken.token}`;
-    const mailSubject = 'Weryfikacja konta';
+    const mailSubject = 'Aktywacja konta';
     const mailText = `Link do aktywacji konta: ${activationLink}`;
     const mailResult = await mailer(email, mailSubject, mailText);
 

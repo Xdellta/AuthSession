@@ -8,7 +8,7 @@ const activate = async (req: Request, res: Response, next: NextFunction) => {
     // Searching for the token in the database
     const foundToken = await prisma.token.findFirst({ where: { token: token } });
 
-    if (!foundToken) {
+    if (!foundToken || foundToken.type !== 'accountActivation') {
       throw { status: 401, message: 'Invalid authorization token' };
     }
 

@@ -21,6 +21,7 @@ model Session {
 model Token {
   token      String   @id
   user_id    Int
+  type       String
   created_at DateTime @default(now())
   expired_at DateTime @default(now())
   User       User     @relation(fields: [user_id], references: [user_id])

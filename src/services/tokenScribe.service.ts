@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import prisma from '../config/prisma.config';
 
-const tokenScribe = async (userId: number, duration: number) => {
+const tokenScribe = async (userId: number, type: string, duration: number) => {
   try {
     const token = uuidv4();
     const createdAt = new Date;
@@ -11,6 +11,7 @@ const tokenScribe = async (userId: number, duration: number) => {
       data: {
         token: token,
         user_id: userId,
+        type: type,
         created_at: createdAt,
         expired_at: expiredAt
       }
