@@ -9,12 +9,7 @@ const create = async (userId: number, res: Response) => {
       throw new Error('The session ID is unavailable or does not exist');
     }
 
-    let sessionId;
-
-    do {
-      sessionId = uuidv4();
-    } while (await prisma.session.findUnique({ where: { session_id: sessionId } }));
-
+    const sessionId = uuidv4();
     const createdAt = new Date;
     const expiredAt = new Date(Date.now() + appCfg.session.duration);
 
@@ -28,7 +23,7 @@ const create = async (userId: number, res: Response) => {
     });
 
     if (!createResult) {
-      throw new Error('Failed to create session');
+      throw new Error('Error writing session to database');
     }
 
     res.cookie('sessionId', sessionId, {

@@ -28,7 +28,7 @@ const refresh = async (sessionId: string, res: Response) => {
     });
 
     if (!updateResult) {
-      throw new Error('Failed to refresh session');
+      throw new Error('Error updating session in database');
     }
 
     res.cookie('sessionId', sessionId, {
